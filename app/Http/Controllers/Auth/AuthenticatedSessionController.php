@@ -8,14 +8,24 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request)
     {
+        $redirectUrl = $request->query('redirect', '/dashboard');
+
+        if (Auth::check()) {
+            $token = JWTAuth::fromUser(Auth::user());
+
+            return redirect()->away($redirectUrl . '?token=' . $token);
+        }
+
+        session(['sso_redirect' => $request->query('redirect')]);
         return view('auth.login');
     }
 
@@ -25,10 +35,18 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Generate JWT token
+        $user = Auth::user();
+        $token = JWTAuth::fromUser($user);
+
+        $redirect = session('sso_redirect', route('dashboard'));
+
+        // clear session value after use
+        session()->forget('sso_redirect');
+
+        return redirect()->away($redirect . '?token=' . $token);
     }
 
     /**
