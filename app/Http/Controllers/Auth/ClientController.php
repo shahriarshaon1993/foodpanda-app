@@ -51,4 +51,23 @@ class ClientController extends Controller
 
         return redirect()->route('dashboard');
     }
+
+    public function destroyWithRedirect(Request $request)
+    {
+        $ssoToken = session('sso_token');
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => "Bearer $ssoToken"
+        ])->post('http://ecommerce-app.test/api/logout');
+
+        return redirect()
+            ->away(
+                'http://ecommerce-app.test/logout?redirect_to=' . route('login')
+            );
+    }
 }
