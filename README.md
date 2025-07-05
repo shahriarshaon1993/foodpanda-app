@@ -16,7 +16,7 @@
 
 ```bash
     git clone <repository-url>
-    cd product-caching
+    cd foodpanda-app
 ```
 2. Install PHP Dependencies
 
