@@ -38,3 +38,7 @@
 ```bash
     php artisan key:generate
 ```
+- Generate JWT secret key:
+```bash
+    php artisan jwt:secret
+```
